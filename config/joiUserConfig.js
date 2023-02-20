@@ -20,4 +20,19 @@ const userSchema = Joi.object({
     userImage: Joi.any()
 })
 
-module.exports = userSchema;
+const updateUserSchema = Joi.object({
+    id: Joi.number(),
+
+    username: Joi.string()
+        .min(3)
+        .max(30)
+        .required(),
+
+
+    role: Joi.string()
+        .required(),
+
+    userImage: Joi.any()
+})
+
+module.exports = { userSchema, updateUserSchema };

@@ -1,7 +1,7 @@
 
 const postgresDb = require("./../config/knexConfig")
 const bcrypt = require('bcrypt');
-const userSchema = require("../config/joiUserConfig")
+const { userSchema, updateUserSchema } = require("../config/joiUserConfig")
 
 // test hash
 const saltRounds = 10;
@@ -112,8 +112,87 @@ const getAllParticipant = async (req, res) => {
 
 }
 
+const putParticipant = async (req, res) => {
+
+    let { id, username, role } = req.body;
+    let userImageFile = req.file;
+    let base64Image = "";
+
+    // 0. validate update user data
+    const { error, value } = await updateUserSchema.validate({
+        id: id,
+        username: username,
+        role: role,
+        userImage: userImageFile
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. convert (Encode) image file to base64
+    if (userImageFile) {
+        const buffer = await userImageFile.buffer;
+        base64Image = await buffer.toString("base64");
+    }
+
+    // 2. Update user data to database
+
+    // 2.1 calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 2.2 Update data to database
+    try {
+
+        let response;
+
+        if (base64Image) {
+            response = await postgresDb('participant')
+                .where({ id: id })
+                .update({
+                    username: username,
+                    role: role,
+                    image: base64Image,
+                    updated_at: timeNowString
+                }, ['id', 'username', 'role'])
+        } else {
+            response = await postgresDb('participant')
+                .where({ id: id })
+                .update({
+                    username: username,
+                    role: role,
+                    updated_at: timeNowString
+                }, ['id', 'username', 'role'])
+        }
+
+        //console.log(response);
+        res.status(200).json({
+            DT: {
+                id: response[0].id,
+                username: response[0].username,
+                role: response[0].role
+            },
+            EC: 0,
+            EM: "Update User Successfully!"
+        })
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+}
+
 module.exports = {
-    postParticipant, getAllParticipant
+    postParticipant, getAllParticipant, putParticipant
 }
 
 
