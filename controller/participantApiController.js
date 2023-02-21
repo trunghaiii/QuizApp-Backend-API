@@ -191,8 +191,33 @@ const putParticipant = async (req, res) => {
 
 }
 
+const deleteParticipant = async (req, res) => {
+    const { id } = req.body
+    console.log(req.body);
+    let response;
+    try {
+        response = await postgresDb('participant')
+            .where('id', id)
+            .returning('id')
+            .del()
+
+        return res.status(200).json({
+            EM: "Delete User Successfully",
+            EC: 0,
+            DT: response[0]
+        })
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+}
+
 module.exports = {
-    postParticipant, getAllParticipant, putParticipant
+    postParticipant, getAllParticipant, putParticipant, deleteParticipant
 }
 
 

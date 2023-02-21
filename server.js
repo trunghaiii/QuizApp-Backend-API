@@ -1,5 +1,6 @@
 const express = require("express")
 const participantApi = require('./routes/participantApi')
+const bodyParser = require('body-parser');
 
 var cors = require('cors')
 require('dotenv').config()
@@ -11,6 +12,9 @@ const upload = multer();
 
 const app = express()
 const PORT = process.env.PORT || 6969
+
+// Parse JSON data in the request bodyy
+app.use(bodyParser.json());
 
 // confif receive req.body and upload file from form-data on postman
 app.use(upload.single("userImage"));
