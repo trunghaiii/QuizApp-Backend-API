@@ -4,7 +4,7 @@ const participantApi = require('./routes/participantApi')
 var cors = require('cors')
 require('dotenv').config()
 
-// confif receive req.body from form-data on postman
+// confif receive req.body from form-data on postman///
 var multer = require('multer');
 const upload = multer();
 
