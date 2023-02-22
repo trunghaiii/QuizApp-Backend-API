@@ -216,8 +216,56 @@ const deleteParticipant = async (req, res) => {
 
 }
 
+const getParticipantPaginate = async (req, res) => {
+    const pagee = Number(req.query.page);
+    const limitt = Number(req.query.limit);
+
+    let totalRows;
+    let totalPages;
+    let numberOfRow;
+
+    try {
+        numberOfRow = await postgresDb('participant').count('*');
+        totalRows = Number(numberOfRow[0].count);
+        totalPages = Math.floor(totalRows / limitt) + 1;
+
+        try {
+            let response = await postgresDb.select('*').from('participant')
+                .offset((pagee - 1) * limitt).limit(limitt)
+
+            return res.status(200).json({
+                DT: {
+                    totalRows: totalRows,
+                    totalPages: totalPages,
+                    users: response
+                },
+                EM: "Get participants pagination successfully",
+                EC: 0
+
+            })
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong!",
+                EC: 1,
+                DT: ""
+            })
+        }
+
+        // res.send(response)
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+}
+
 module.exports = {
-    postParticipant, getAllParticipant, putParticipant, deleteParticipant
+    postParticipant, getAllParticipant,
+    putParticipant, deleteParticipant,
+    getParticipantPaginate
 }
 
 
