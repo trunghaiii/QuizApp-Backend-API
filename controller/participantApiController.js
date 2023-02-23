@@ -227,10 +227,15 @@ const getParticipantPaginate = async (req, res) => {
     try {
         numberOfRow = await postgresDb('participant').count('*');
         totalRows = Number(numberOfRow[0].count);
-        totalPages = Math.floor(totalRows / limitt) + 1;
+        if (totalRows % limitt === 0) {
+            totalPages = Math.floor(totalRows / limitt)
+        } else {
+            totalPages = Math.floor(totalRows / limitt) + 1;
+        }
+
 
         try {
-            let response = await postgresDb.select('*').from('participant')
+            let response = await postgresDb.select('*').from('participant').orderBy('id', 'asc')
                 .offset((pagee - 1) * limitt).limit(limitt)
 
             return res.status(200).json({
