@@ -33,6 +33,22 @@ const postParticipant = async (req, res) => {
         })
     }
 
+    // 0.1 check if the email already exist in database:
+
+    const result = await postgresDb
+        .select('email')
+        .from('participant')
+        .where('email', email)
+        .first();
+
+    //console.log(result);
+    if (result) {
+        return res.status(400).json({
+            EM: "This Email is already exist in the Database!!!",
+            EC: 1,
+            DT: ""
+        })
+    }
 
     // 1. hash password:
     await bcrypt.hash(password, saltRounds).then(function (hash) {
