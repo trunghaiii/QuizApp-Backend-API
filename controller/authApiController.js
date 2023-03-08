@@ -1,6 +1,9 @@
 const postgresDb = require("./../config/knexConfig")
 const bcrypt = require('bcrypt');
 const { generateJwtToken } = require("../generateJwtToken")
+const { userSchema } = require("../config/joiUserConfig")
+
+const saltRounds = 10;
 
 const login = async (req, res) => {
 
@@ -87,6 +90,90 @@ const login = async (req, res) => {
 
 }
 
+const registerUser = async (req, res) => {
+    let { email, password, username } = req.body;
+    let hashPassword;
+    //let base64Image;
+
+    // 0. validate user data
+    const { error, value } = await userSchema.validate({
+        email: email,
+        password: password,
+        username: username,
+        role: "USER",
+        userImage: null
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 0.1 check if the email already exist in database:
+
+    const result = await postgresDb
+        .select('email')
+        .from('participant')
+        .where('email', email)
+        .first();
+
+    //console.log(result);
+    if (result) {
+        return res.status(200).json({
+            EM: "This Email is already exist in the Database!!!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. hash password:
+    await bcrypt.hash(password, saltRounds).then(function (hash) {
+        hashPassword = hash;
+    });
+
+    // 2. convert (Encode) image file to base64
+    // if (userImageFile) {
+    //     const buffer = await userImageFile.buffer;
+    //     base64Image = await buffer.toString("base64");
+    // }
+
+    // 3. Upload user data to database
+
+    // 3.1 calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 3.2 Upload data to database
+    try {
+        let response = await postgresDb('participant').insert({
+            email: email,
+            password: hashPassword,
+            username: username,
+            role: "USER",
+            image: null,
+            created_at: timeNowString,
+            updated_at: timeNowString
+        })
+
+        //console.log(response);
+        res.status(200).json({
+            DT: "",
+            EC: 0,
+            EM: "A New User Created Successfully!"
+        })
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+    //res.send("register")
+}
 module.exports = {
-    login
+    login, registerUser
 }

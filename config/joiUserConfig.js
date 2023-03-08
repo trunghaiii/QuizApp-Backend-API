@@ -20,6 +20,7 @@ const userSchema = Joi.object({
     userImage: Joi.any()
 })
 
+
 const updateUserSchema = Joi.object({
     id: Joi.number(),
 
