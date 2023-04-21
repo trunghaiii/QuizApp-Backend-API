@@ -73,6 +73,7 @@ const getQuizByParticipant = async (req, res) => {
     // res.send('ok la')
 }
 
+
 module.exports = {
     getQuizByParticipant
 }

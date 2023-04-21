@@ -2,6 +2,7 @@ const express = require("express")
 const participantApi = require('./routes/participantApi')
 const authApi = require("./routes/authApi")
 const quizParticipantApi = require("./routes/quizParticipantApi")
+const questionApi = require("./routes/questionApi")
 const bodyParser = require('body-parser');
 
 var cors = require('cors')
@@ -29,6 +30,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
 app.use('/api/v1', quizParticipantApi)
+app.use('/api/v1', questionApi)
+
 
 
 
