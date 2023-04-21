@@ -22,7 +22,8 @@ const login = async (req, res) => {
                     // create object to sign JWT Token for verifying user later
                     let user = {
                         email: data.email,
-                        role: data.role
+                        role: data.role,
+                        id: data.id
                     }
 
                     let { accessToken, refreshToken, fresh_expired } = generateJwtToken(user);
