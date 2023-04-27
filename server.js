@@ -3,6 +3,7 @@ const participantApi = require('./routes/participantApi')
 const authApi = require("./routes/authApi")
 const quizParticipantApi = require("./routes/quizParticipantApi")
 const questionApi = require("./routes/questionApi")
+const answerApi = require("./routes/answerApi")
 const bodyParser = require('body-parser');
 
 var cors = require('cors')
@@ -15,6 +16,19 @@ const upload = multer();
 
 const app = express()
 const PORT = process.env.PORT || 6969
+
+// config middleware to access raw data
+app.use((req, res, next) => {
+    let rawData = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+        rawData += chunk;
+    });
+    req.on('end', () => {
+        req.rawData = JSON.parse(rawData);
+        next();
+    });
+});
 
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json());
@@ -31,6 +45,8 @@ app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
 app.use('/api/v1', quizParticipantApi)
 app.use('/api/v1', questionApi)
+app.use('/api/v1', answerApi)
+
 
 
 
