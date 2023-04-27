@@ -30,17 +30,7 @@ app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 
 // config middleware to access raw data
-app.use('/api/v1/quiz-submit', (req, res, next) => {
-    let rawData = '';
-    req.setEncoding('utf8');
-    req.on('data', (chunk) => {
-        rawData += chunk;
-    });
-    req.on('end', () => {
-        req.rawData = JSON.parse(rawData);
-        next();
-    });
-});
+app.use(bodyParser.json({ type: 'application/json' }));
 
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)

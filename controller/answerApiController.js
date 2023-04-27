@@ -14,7 +14,7 @@ const submitAnswer = async (req, res) => {
     try {
         countTotal = await postgresDb('quizquestion')
             .count('quiz_id')
-            .where('quiz_id', req.rawData.quizId)
+            .where('quiz_id', req.body.quizId)
 
         countTotal = +countTotal[0].count;
         //console.log(countTotal);
@@ -29,7 +29,7 @@ const submitAnswer = async (req, res) => {
     // 2. get question id array with the quiz_id
     try {
         questionIdArr = await postgresDb('quizquestion')
-            .where('quiz_id', req.rawData.quizId)
+            .where('quiz_id', req.body.quizId)
             .pluck('id')
 
         //console.log(questionIdArr);
@@ -52,7 +52,7 @@ const submitAnswer = async (req, res) => {
                 .first()
 
             let userAnswerIdArr = [];
-            req.rawData.answers.forEach((item) => {
+            req.body.answers.forEach((item) => {
                 if (item.questionId === questionId) {
                     userAnswerIdArr = item.userAnswerId
                 }
@@ -84,7 +84,7 @@ const submitAnswer = async (req, res) => {
 
     // 4. return data for front end
 
-    console.log(quizData, countCorrect);
+    // console.log(quizData, countCorrect);
     return res.status(200).json({
         EM: "Submit the quiz sucessfully",
         EC: 0,
@@ -98,8 +98,8 @@ const submitAnswer = async (req, res) => {
 
 
 
-    // console.log(req.rawData);
-    res.send("hello azinomoto")
+    // console.log(req.body);
+    // res.send("hello azinomoto")
 
 }
 
