@@ -17,18 +17,6 @@ const upload = multer();
 const app = express()
 const PORT = process.env.PORT || 6969
 
-// config middleware to access raw data
-app.use((req, res, next) => {
-    let rawData = '';
-    req.setEncoding('utf8');
-    req.on('data', (chunk) => {
-        rawData += chunk;
-    });
-    req.on('end', () => {
-        req.rawData = JSON.parse(rawData);
-        next();
-    });
-});
 
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json());
@@ -40,6 +28,19 @@ app.use(cors())
 
 
 app.use(express.urlencoded({ extended: true }))
+
+// config middleware to access raw data
+app.use('/api/v1/quiz-submit', (req, res, next) => {
+    let rawData = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+        rawData += chunk;
+    });
+    req.on('end', () => {
+        req.rawData = JSON.parse(rawData);
+        next();
+    });
+});
 
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
