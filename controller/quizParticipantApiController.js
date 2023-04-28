@@ -1,6 +1,6 @@
 let jwt = require('jsonwebtoken');
 const postgresDb = require("./../config/knexConfig")
-
+const { quizSchema } = require("../config/joiUserConfig")
 
 const getQuizByParticipant = async (req, res) => {
 
@@ -73,7 +73,78 @@ const getQuizByParticipant = async (req, res) => {
     // res.send('ok la')
 }
 
+const postSubmitQuiz = async (req, res) => {
+
+    let { name, description, difficulty } = req.body;
+    let quizImage = req.file;
+    let base64Image;
+
+    // 0. validate quiz data
+    const { error, value } = await quizSchema.validate({
+        name: name,
+        description: description,
+        difficulty: difficulty,
+        quizImage: quizImage
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. convert (Encode) image file to base64
+    if (quizImage) {
+        const buffer = await quizImage.buffer;
+        base64Image = await buffer.toString("base64");
+    }
+
+    // 2. calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 3. Upload data to database
+    try {
+        let response = await postgresDb('quiz').insert({
+            name: name,
+            description: description,
+            image: base64Image,
+            difficulty: difficulty,
+            created_at: timeNowString,
+            updated_at: timeNowString
+        }).returning(['id', 'name', 'description', 'difficulty', 'updated_at', 'created_at'])
+
+        //console.log(response);
+        res.status(200).json({
+            DT: {
+                id: response[0].id,
+                name: response[0].name,
+                description: response[0].description,
+                difficulty: response[0].difficulty,
+                updated_at: response[0].updated_at,
+                created_at: response[0].created_at
+            },
+            EC: 0,
+            EM: "Create a new quiz Successfully!"
+        })
+        //console.log(response);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+
+    //console.log(base64Image);
+    res.send("hallo tom tran")
+}
+
 
 module.exports = {
-    getQuizByParticipant
+    getQuizByParticipant, postSubmitQuiz
 }

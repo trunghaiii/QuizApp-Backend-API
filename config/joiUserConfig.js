@@ -36,4 +36,18 @@ const updateUserSchema = Joi.object({
     userImage: Joi.any()
 })
 
-module.exports = { userSchema, updateUserSchema };
+const quizSchema = Joi.object({
+
+    name: Joi.string()
+        .required(),
+
+    description: Joi.string()
+        .required(),
+
+    difficulty: Joi.string()
+        .required(),
+
+    quizImage: Joi.any()
+})
+
+module.exports = { userSchema, updateUserSchema, quizSchema };

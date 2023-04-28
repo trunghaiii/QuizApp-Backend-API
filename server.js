@@ -22,7 +22,9 @@ const PORT = process.env.PORT || 6969
 app.use(bodyParser.json());
 
 // confif receive req.body and upload file from form-data on postman
-app.use(upload.single("userImage"));
+app.use('/api/v1/participant', upload.single("userImage"));
+app.use('/api/v1/quiz', upload.single("quizImage"));
+
 
 app.use(cors())
 
