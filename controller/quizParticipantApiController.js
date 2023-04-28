@@ -191,8 +191,86 @@ const getQuizById = async (req, res) => {
     // res.send("olaa")
 }
 
+const putUpdateQuiz = async (req, res) => {
+
+    let { id, name, description, difficulty } = req.body;
+    let quizImage = req.file;
+    let base64Image = "";
+
+    // 0. validate quiz data
+    const { error, value } = await quizSchema.validate({
+        name: name,
+        description: description,
+        difficulty: difficulty,
+        quizImage: quizImage
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. convert (Encode) image file to base64
+    if (quizImage) {
+        const buffer = await quizImage.buffer;
+        base64Image = await buffer.toString("base64");
+    }
+
+
+    // 2. Upload data to database
+    try {
+        let response;
+        if (base64Image) {
+            response = await postgresDb('quiz')
+                .update({
+                    name: name,
+                    description: description,
+                    difficulty: difficulty,
+                    image: base64Image
+                })
+                .where('id', +id)
+                .returning(['id', 'name', 'description', 'difficulty'])
+        } else {
+            response = await postgresDb('quiz')
+                .update({
+                    name: name,
+                    description: description,
+                    difficulty: difficulty
+                })
+                .where('id', +id)
+                .returning(['id', 'name', 'description', 'difficulty'])
+        }
+
+
+        //console.log(response);
+        res.status(200).json({
+            DT: {
+                id: response[0].id,
+                name: response[0].name,
+                description: response[0].description,
+                difficulty: response[0].difficulty
+            },
+            EC: 0,
+            EM: "Update a quiz Successfully!"
+        })
+        //console.log(response);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+
+    //console.log(req.body);
+    //res.send("alright!!!")
+}
 
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
-    getAllQuiz, getQuizById
+    getAllQuiz, getQuizById, putUpdateQuiz
 }
