@@ -165,8 +165,34 @@ const getAllQuiz = async (req, res) => {
     //res.send("o la la")
 }
 
+const getQuizById = async (req, res) => {
+    // console.log(+req.params.id);
+
+    try {
+        let data = await postgresDb('quiz')
+            .select()
+            .where('id', +req.params.id)
+
+        return res.status(200).json({
+            EM: "Get quizzes data by Id successfully",
+            EC: 0,
+            DT: data[0]
+        })
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+
+    // console.log(data);
+    // res.send("olaa")
+}
+
 
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
-    getAllQuiz
+    getAllQuiz, getQuizById
 }
