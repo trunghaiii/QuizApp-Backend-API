@@ -270,7 +270,87 @@ const putUpdateQuiz = async (req, res) => {
     //res.send("alright!!!")
 }
 
+const deleteQuiz = async (req, res) => {
+
+    let questionIdArr
+
+    // 1. find all ids of questions that match the quizId
+    try {
+        questionIdArr = await postgresDb('quizquestion')
+            .pluck('id')
+            .where('quiz_id', +req.params.id)
+
+
+        console.log(questionIdArr);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with find all ids of questions that match the quizId",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 2. delete all the answers that match questionIdArr
+    try {
+        let answerDeleteResponse = await postgresDb('quizanswer')
+            .whereIn('question_id', questionIdArr)
+            .del()
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with delete all the answers that match questionIdArr",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // // 3. Delete all fields that match quizId in other tables:
+    try {
+        let response = await postgresDb.transaction(async (trx) => {
+            // delete field from table1
+
+            await trx('participantquiz')
+                .where('quiz_id', +req.params.id)
+                .del();
+            // delete field from table2
+            await trx('quizquestion')
+                .where('quiz_id', +req.params.id)
+                .del();
+
+            // delete field from table3
+
+            await trx('quiz')
+                .where('id', +req.params.id)
+                .del();
+
+
+            trx.commit();
+            return res.status(200).json({
+                EM: "Delete the quiz sucessfully",
+                EC: 0,
+                DT: {
+                    id: +req.params.id
+                }
+            })
+        });
+
+
+    } catch (error) {
+        //console.log(error);
+        return res.status(400).json({
+            EM: "Something went wrong with Delete all fields that match quizId in other tables",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+
+
+    // console.log(+req.params.id);
+    //res.send("hahahahahahahahahah")
+}
+
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
-    getAllQuiz, getQuizById, putUpdateQuiz
+    getAllQuiz, getQuizById, putUpdateQuiz,
+    deleteQuiz
 }
