@@ -50,4 +50,12 @@ const quizSchema = Joi.object({
     quizImage: Joi.any()
 })
 
-module.exports = { userSchema, updateUserSchema, quizSchema };
+const questionSchema = Joi.object({
+    quiz_id: Joi.any(),
+    description: Joi.string()
+        .required(),
+
+    questionImage: Joi.any()
+})
+
+module.exports = { userSchema, updateUserSchema, quizSchema, questionSchema };

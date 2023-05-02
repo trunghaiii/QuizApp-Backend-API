@@ -1,6 +1,6 @@
 //let jwt = require('jsonwebtoken');
 const postgresDb = require("./../config/knexConfig")
-
+const { questionSchema } = require("./../config/joiUserConfig")
 
 const getQuestionByQuizId = async (req, res) => {
 
@@ -48,7 +48,68 @@ const getQuestionByQuizId = async (req, res) => {
 
 }
 
+const postAddQuestion = async (req, res) => {
+    const { quiz_id, description } = req.body;
+    let questionImage = req.file;
+    let base64Image;
+
+    // 0. validate quiz data
+    const { error, value } = await questionSchema.validate({
+        quiz_id: +quiz_id,
+        description: description,
+        questionImage: questionImage
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. convert (Encode) image file to base64
+    if (questionImage) {
+        const buffer = await questionImage.buffer;
+        base64Image = await buffer.toString("base64");
+    }
+
+    // 2. calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 3. Upload data to database
+    try {
+        let response = await postgresDb('quizquestion')
+            .insert({
+                quiz_id: +quiz_id,
+                description: description,
+                image: base64Image,
+                created_at: timeNowString,
+                updated_at: timeNowString
+            }).returning(['id', 'description', 'quiz_id', 'updated_at', 'created_at'])
+
+        //console.log(response);
+        return res.status(400).json({
+            EM: "Create a new question successfully",
+            EC: 0,
+            DT: response[0]
+        })
+    } catch (error) {
+        //console.log(error);
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+
+    //res.send("hahahahahahahahahahahaha")
+}
+
 
 module.exports = {
-    getQuestionByQuizId
+    getQuestionByQuizId, postAddQuestion
 }

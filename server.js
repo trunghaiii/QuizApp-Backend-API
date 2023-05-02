@@ -24,6 +24,7 @@ app.use(bodyParser.json());
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
 app.use('/api/v1/quiz', upload.single("quizImage"));
+app.use('/api/v1/question', upload.single("questionImage"));
 
 
 app.use(cors())
