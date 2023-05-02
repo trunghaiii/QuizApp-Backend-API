@@ -91,7 +91,7 @@ const postAddQuestion = async (req, res) => {
             }).returning(['id', 'description', 'quiz_id', 'updated_at', 'created_at'])
 
         //console.log(response);
-        return res.status(400).json({
+        return res.status(200).json({
             EM: "Create a new question successfully",
             EC: 0,
             DT: response[0]

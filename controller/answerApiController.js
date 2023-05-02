@@ -1,5 +1,6 @@
 let jwt = require('jsonwebtoken');
 const postgresDb = require("./../config/knexConfig")
+const { answerSchema } = require("./../config/joiUserConfig")
 
 
 const submitAnswer = async (req, res) => {
@@ -103,7 +104,68 @@ const submitAnswer = async (req, res) => {
 
 }
 
+const postAnswer = async (req, res) => {
+
+    let { description, correct_answer, question_id } = req.body;
+
+    // 0. validate quiz data
+    const { error, value } = await answerSchema.validate({
+        description: description,
+        correct_answer: correct_answer,
+        question_id: question_id
+    });
+
+    if (error) {
+        return res.status(400).json({
+            EM: error.message,
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 1. convert correct_answer from text to boolean
+    if (correct_answer.toLowerCase() === "true") {
+        correct_answer = true;
+    } else if (correct_answer.toLowerCase() === "false") {
+        correct_answer = false;
+    }
+
+    // 2. calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 3. post answer to the database
+
+    try {
+        let response = await postgresDb('quizanswer')
+            .insert({
+                description: description,
+                correct_answer: correct_answer,
+                question_id: question_id,
+                created_at: timeNowString,
+                updated_at: timeNowString
+            }).returning(['id', 'description', 'correct_answer', 'question_id', 'updated_at', 'created_at'])
+
+        //console.log(response);
+        return res.status(200).json({
+            EM: "Create a new answer successfully",
+            EC: 0,
+            DT: response[0]
+        })
+    } catch (error) {
+        // console.log(error);
+        return res.status(400).json({
+            EM: "Something went wrong!",
+            EC: 1,
+            DT: ""
+        })
+    }
+    //console.log(req.body);
+    res.send("hai man dep zai vcl a")
+}
+
 
 module.exports = {
-    submitAnswer
+    submitAnswer, postAnswer
 }

@@ -1,10 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const { submitAnswer } = require("../controller/answerApiController")
+const { submitAnswer, postAnswer } = require("../controller/answerApiController")
 
 
 router.post('/quiz-submit', submitAnswer)
-
+router.post('/answer', postAnswer)
 
 
 
