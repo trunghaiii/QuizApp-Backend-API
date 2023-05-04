@@ -124,11 +124,14 @@ const postAnswer = async (req, res) => {
     }
 
     // 1. convert correct_answer from text to boolean
-    if (correct_answer.toLowerCase() === "true") {
-        correct_answer = true;
-    } else if (correct_answer.toLowerCase() === "false") {
-        correct_answer = false;
+    if (typeof correct_answer != "boolean") {
+        if (correct_answer.toLowerCase() === "true") {
+            correct_answer = true;
+        } else if (correct_answer.toLowerCase() === "false") {
+            correct_answer = false;
+        }
     }
+
 
     // 2. calculate the current time in timestamp format
     let millisecondsTimeNow = Date.now();
