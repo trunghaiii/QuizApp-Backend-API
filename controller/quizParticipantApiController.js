@@ -28,22 +28,22 @@ const getQuizByParticipant = async (req, res) => {
 
     let user_id = jwtData.data.id;
 
-    // 3. take all the quiz_id that match user_id 
-    let quiz_id_arr;
-    try {
-        quiz_id_arr = await postgresDb.select('*')
-            .from('participantquiz')
-            .where('participant_id', user_id)
-            .pluck('quiz_id')
-        // .first()
-        //console.log(quiz_id_arr);
-    } catch (error) {
-        return res.status(200).json({
-            EM: "something went wrong with querring all quiz _id",
-            EC: -1,
-            DT: ""
-        })
-    }
+    // // 3. take all the quiz_id that match user_id 
+    // let quiz_id_arr;
+    // try {
+    //     quiz_id_arr = await postgresDb.select('*')
+    //         .from('participantquiz')
+    //         .where('participant_id', user_id)
+    //         .pluck('quiz_id')
+    //     // .first()
+    //     //console.log(quiz_id_arr);
+    // } catch (error) {
+    //     return res.status(200).json({
+    //         EM: "something went wrong with querring all quiz _id",
+    //         EC: -1,
+    //         DT: ""
+    //     })
+    // }
 
     // 4.  join all needed data from 2 table participantquiz and quiz
     let data;
@@ -52,7 +52,7 @@ const getQuizByParticipant = async (req, res) => {
             'participantquiz.is_finish', 'participantquiz.time_start', 'participantquiz.time_end',
             'quiz.id', 'quiz.description', 'quiz.image')
             .from('participantquiz')
-            .whereIn('participantquiz.quiz_id', quiz_id_arr)
+            .where('participantquiz.participant_id', user_id)
             .join('quiz', 'quiz.id', '=', 'participantquiz.quiz_id')
     } catch (error) {
         return res.status(200).json({
