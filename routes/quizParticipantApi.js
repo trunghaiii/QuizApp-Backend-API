@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const { getQuizByParticipant, postSubmitQuiz,
     getAllQuiz, getQuizById, putUpdateQuiz,
-    deleteQuiz
+    deleteQuiz, postAssignQuiz
 } = require("../controller/quizParticipantApiController")
 
 
@@ -12,6 +12,8 @@ router.get('/quiz/all', getAllQuiz)
 router.get('/quiz/:id', getQuizById)
 router.put('/quiz', putUpdateQuiz)
 router.delete('/quiz/:id', deleteQuiz)
+router.post('/quiz-assign-to-user', postAssignQuiz)
+
 
 
 

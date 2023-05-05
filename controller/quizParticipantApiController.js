@@ -349,8 +349,72 @@ const deleteQuiz = async (req, res) => {
     //res.send("hahahahahahahahahah")
 }
 
+const postAssignQuiz = async (req, res) => {
+    const { quizId, userId } = req.body;
+
+    // 1. check if this quiz was already assigned to this user or not
+    try {
+        let response = await postgresDb('participantquiz')
+            .where({
+                participant_id: +userId,
+                quiz_id: +quizId
+            })
+            .select()
+
+        if (response.length !== 0) {
+            return res.status(200).json({
+                EM: "This Quiz was already assigned to this user ",
+                EC: 1,
+                DT: ""
+            })
+        }
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with check if this quiz was already assigned",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 2. assign quiz to user:
+
+    // 2.1 calculate the current time in timestamp format
+    let millisecondsTimeNow = Date.now();
+    let date = new Date(millisecondsTimeNow);
+    let timeNowString = date.toLocaleString();
+
+    // 2.2 assign quiz to user:
+
+    try {
+        let response = await postgresDb('participantquiz')
+            .insert({
+                participant_id: +userId,
+                quiz_id: +quizId,
+                created_at: timeNowString,
+                updated_at: timeNowString
+            })
+        return res.status(200).json({
+            EM: "Assign the quiz to the user successfully",
+            EC: 0,
+            DT: {
+                quizId: +quizId,
+                userId: userId
+            }
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with assign quiz to user",
+            EC: 1,
+            DT: ""
+        })
+    }
+    //console.log(req.body);
+    res.send("ho la")
+}
+
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
     getAllQuiz, getQuizById, putUpdateQuiz,
-    deleteQuiz
+    deleteQuiz, postAssignQuiz
 }
