@@ -413,8 +413,101 @@ const postAssignQuiz = async (req, res) => {
     res.send("ho la")
 }
 
+const getQuizQA = async (req, res) => {
+    let questionIdArr;
+    let QAData = [];
+    // 1. find all list of question id that match quiz id
+    try {
+        let data = await postgresDb('quizquestion')
+            .where('quiz_id', '=', +req.params.quizId)
+            .pluck('id')
+        questionIdArr = data;
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with find all list of question id that match quiz id",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 2. Build the QA data for front end
+    // 
+
+    for (let questionId of questionIdArr) {
+        // take the list of answer id that that match question id
+        let QAAnswer = [];
+        let QAAnswerIdArr = [];
+        try {
+            let data = await postgresDb('quizanswer')
+                .where('question_id', '=', questionId)
+                .pluck('id')
+            QAAnswerIdArr = data;
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong with take the list of answer id that that match question id",
+                EC: 1,
+                DT: ""
+            })
+        }
+        // build QAAnswer data
+        try {
+            for (let answerId of QAAnswerIdArr) {
+                let Adata = await postgresDb('quizanswer')
+                    .where('id', '=', answerId)
+                    .select('description', 'correct_answer')
+                QAAnswer.push({
+                    id: answerId,
+                    description: Adata[0].description,
+                    isCorrect: Adata[0].correct_answer
+                });
+            }
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong with build QAAnswer data",
+                EC: 1,
+                DT: ""
+            })
+        }
+        // build question data
+        let Qdata;
+        try {
+            Qdata = await postgresDb('quizquestion')
+                .where('id', '=', questionId)
+                .select('description', 'image')
+            //console.log(Qdata[0]);
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong with build question data",
+                EC: 1,
+                DT: ""
+            })
+        }
+
+        // build qaData
+        QAData.push({
+            id: questionId,
+            description: Qdata[0].description,
+            imageFile: Qdata[0].image,
+            imageName: "",
+            answers: QAAnswer
+        })
+    }
+    // 3. return data for the front end
+
+    return res.status(200).json({
+        EM: "Get Quiz with Q/A successfully",
+        EC: 0,
+        DT: {
+            quizId: req.params.quizId,
+            qa: QAData
+        }
+    })
+    //console.log("orrr", QAData);
+    res.send("hola")
+}
+
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
     getAllQuiz, getQuizById, putUpdateQuiz,
-    deleteQuiz, postAssignQuiz
+    deleteQuiz, postAssignQuiz, getQuizQA
 }
