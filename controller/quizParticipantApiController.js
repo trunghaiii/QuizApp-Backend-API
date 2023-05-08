@@ -506,8 +506,160 @@ const getQuizQA = async (req, res) => {
     res.send("hola")
 }
 
+const postUpsertQA = async (req, res) => {
+
+    // 1. Take all question id that match quiz id
+
+    let questionIdArr = [];
+    try {
+        questionIdArr = await postgresDb('quizquestion')
+            .pluck('id')
+            .where('quiz_id', '=', req.body.quizId)
+
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with Take all question id that match quiz id",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 2.  Update Q/A data in DB: 
+
+    for (let question of req.body.questions) {
+        // filter questionIdArr
+        for (let i = 0; i < questionIdArr.length; i++) {
+            if (question.id === questionIdArr[i]) {
+                questionIdArr[i] = -1;
+            }
+        }
+        // 2.1 update question data in DB: 
+        try {
+            let data = await postgresDb('quizquestion')
+                .where('id', '=', question.id)
+                .update({
+                    description: question.description,
+                    image: question.imageFile
+                })
+            //console.log(data);
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong with update question data in DB",
+                EC: 1,
+                DT: ""
+            })
+        }
+
+        // 2.2.Take all answer id that match question id
+        let answerIdArr = []
+        try {
+            answerIdArr = await postgresDb('quizanswer')
+                .pluck('id')
+                .where('question_id', '=', question.id)
+        } catch (error) {
+            return res.status(400).json({
+                EM: "Something went wrong with Take all answer id that match question id",
+                EC: 1,
+                DT: ""
+            })
+        }
+        // 2.3. update answer data in DB
+        for (let answer of question.answers) {
+            // filter answerIdArr
+            for (let j = 0; j < answerIdArr.length; j++) {
+                if (answer.id === answerIdArr[j]) {
+                    answerIdArr[j] = -1;
+                }
+            }
+            // update answer
+            try {
+                let data = await postgresDb('quizanswer')
+                    .where('id', '=', answer.id)
+                    .update({
+                        description: answer.description,
+                        correct_answer: answer.isCorrect
+                    })
+                //console.log(data);
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with update answer data in DB",
+                    EC: 1,
+                    DT: ""
+                })
+            }
+
+            // 2.4. delete answers that do not exist in question data got from front end
+            for (let answerId of answerIdArr) {
+                if (answerId !== -1) {
+                    try {
+                        let data = await postgresDb('quizanswer')
+                            .where('id', '=', answerId)
+                            .del()
+                        // console.log(data);
+                    } catch (error) {
+                        return res.status(400).json({
+                            EM: "Something went wrong with delete answers ",
+                            EC: 1,
+                            DT: ""
+                        })
+                    }
+                }
+            }
+
+
+
+        }
+
+
+    }
+
+    // 2.5 delete questions that do not exist in data got from front end
+    for (let questionId of questionIdArr) {
+        if (questionId !== -1) {
+            // delete question: 
+            try {
+                let data = await postgresDb('quizquestion')
+                    .where('id', '=', questionId)
+                    .del()
+                // console.log(data);
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with delete questions ",
+                    EC: 1,
+                    DT: ""
+                })
+            }
+
+            // delete answers associated with the question:
+            try {
+                let data = await postgresDb('quizanswer')
+                    .where('question_id', '=', questionId)
+                    .del()
+                // console.log(data);
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with delete answers associated with the question",
+                    EC: 1,
+                    DT: ""
+                })
+            }
+
+        }
+    }
+
+    return res.status(200).json({
+        EM: "Upsert Quiz with Q/A successfully",
+        EC: 0,
+        DT: ""
+    })
+
+    //console.log(answerIdArr); 
+    res.send("messi")
+}
+
 module.exports = {
     getQuizByParticipant, postSubmitQuiz,
     getAllQuiz, getQuizById, putUpdateQuiz,
-    deleteQuiz, postAssignQuiz, getQuizQA
+    deleteQuiz, postAssignQuiz, getQuizQA,
+    postUpsertQA
 }
