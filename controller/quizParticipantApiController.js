@@ -527,41 +527,77 @@ const postUpsertQA = async (req, res) => {
     // 2.  Update Q/A data in DB: 
 
     for (let question of req.body.questions) {
+        let qId;
         // filter questionIdArr
         for (let i = 0; i < questionIdArr.length; i++) {
             if (question.id === questionIdArr[i]) {
                 questionIdArr[i] = -1;
             }
         }
-        // 2.1 update question data in DB: 
-        try {
-            let data = await postgresDb('quizquestion')
-                .where('id', '=', question.id)
-                .update({
-                    description: question.description,
-                    image: question.imageFile
+
+
+        if (typeof (question.id) === 'number') {
+            qId = question.id;
+            // 2.1 update question data in DB: 
+            try {
+                let data = await postgresDb('quizquestion')
+                    .where('id', '=', question.id)
+                    .update({
+                        description: question.description,
+                        image: question.imageFile
+                    })
+                //console.log(data);
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with update question data in DB",
+                    EC: 1,
+                    DT: ""
                 })
-            //console.log(data);
-        } catch (error) {
-            return res.status(400).json({
-                EM: "Something went wrong with update question data in DB",
-                EC: 1,
-                DT: ""
-            })
+            }
+        } else {
+            // 2.1 add new question
+            //  calculate the current time in timestamp format
+            let millisecondsTimeNow = Date.now();
+            let date = new Date(millisecondsTimeNow);
+            let timeNowString = date.toLocaleString();
+
+            //  Upload data to database
+            try {
+                let response = await postgresDb('quizquestion')
+                    .insert({
+                        quiz_id: req.body.quizId,
+                        description: question.description,
+                        image: question.imageFile,
+                        created_at: timeNowString,
+                        updated_at: timeNowString
+                    }).returning(['id', 'description', 'quiz_id', 'updated_at', 'created_at'])
+                qId = response[0].id;
+
+            } catch (error) {
+                //console.log(error);
+                return res.status(400).json({
+                    EM: "Something went wrong with adding new question!",
+                    EC: 1,
+                    DT: ""
+                })
+            }
         }
+
 
         // 2.2.Take all answer id that match question id
         let answerIdArr = []
-        try {
-            answerIdArr = await postgresDb('quizanswer')
-                .pluck('id')
-                .where('question_id', '=', question.id)
-        } catch (error) {
-            return res.status(400).json({
-                EM: "Something went wrong with Take all answer id that match question id",
-                EC: 1,
-                DT: ""
-            })
+        if (typeof (question.id) === 'number') {
+            try {
+                answerIdArr = await postgresDb('quizanswer')
+                    .pluck('id')
+                    .where('question_id', '=', question.id)
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with Take all answer id that match question id",
+                    EC: 1,
+                    DT: ""
+                })
+            }
         }
         // 2.3. update answer data in DB
         for (let answer of question.answers) {
@@ -571,22 +607,55 @@ const postUpsertQA = async (req, res) => {
                     answerIdArr[j] = -1;
                 }
             }
-            // update answer
-            try {
-                let data = await postgresDb('quizanswer')
-                    .where('id', '=', answer.id)
-                    .update({
-                        description: answer.description,
-                        correct_answer: answer.isCorrect
+
+
+            if (typeof (answer.id) === 'number') {
+                // update answer
+                try {
+                    let data = await postgresDb('quizanswer')
+                        .where('id', '=', answer.id)
+                        .update({
+                            description: answer.description,
+                            correct_answer: answer.isCorrect
+                        })
+                    //console.log(data);
+                } catch (error) {
+                    return res.status(400).json({
+                        EM: "Something went wrong with update answer data in DB",
+                        EC: 1,
+                        DT: ""
                     })
-                //console.log(data);
-            } catch (error) {
-                return res.status(400).json({
-                    EM: "Something went wrong with update answer data in DB",
-                    EC: 1,
-                    DT: ""
-                })
+                }
+            } else {
+                // adding answer
+                //  calculate the current time in timestamp format
+                let millisecondsTimeNow = Date.now();
+                let date = new Date(millisecondsTimeNow);
+                let timeNowString = date.toLocaleString();
+
+                //  post answer to the database
+
+                try {
+                    let response = await postgresDb('quizanswer')
+                        .insert({
+                            description: answer.description,
+                            correct_answer: answer.isCorrect,
+                            question_id: qId,
+                            created_at: timeNowString,
+                            updated_at: timeNowString
+                        }).returning(['id', 'description', 'correct_answer', 'question_id', 'updated_at', 'created_at'])
+
+
+                } catch (error) {
+                    //console.log(error);
+                    return res.status(400).json({
+                        EM: "Something went wrong with adding answer!",
+                        EC: 1,
+                        DT: ""
+                    })
+                }
             }
+
 
 
 
@@ -616,20 +685,6 @@ const postUpsertQA = async (req, res) => {
     // 2.5 delete questions that do not exist in data got from front end
     for (let questionId of questionIdArr) {
         if (questionId !== -1) {
-            // delete question: 
-            try {
-                let data = await postgresDb('quizquestion')
-                    .where('id', '=', questionId)
-                    .del()
-                // console.log(data);
-            } catch (error) {
-                return res.status(400).json({
-                    EM: "Something went wrong with delete questions ",
-                    EC: 1,
-                    DT: ""
-                })
-            }
-
             // delete answers associated with the question:
             try {
                 let data = await postgresDb('quizanswer')
@@ -643,6 +698,21 @@ const postUpsertQA = async (req, res) => {
                     DT: ""
                 })
             }
+            // delete question: 
+            try {
+                let data = await postgresDb('quizquestion')
+                    .where('id', '=', questionId)
+                    .del()
+                // console.log(data);
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "Something went wrong with delete questions ",
+                    EC: 1,
+                    DT: ""
+                })
+                // console.log(error);
+            }
+
 
         }
     }
@@ -652,6 +722,10 @@ const postUpsertQA = async (req, res) => {
         EC: 0,
         DT: ""
     })
+
+
+
+    //console.log(existdata);
 
     //console.log(answerIdArr); 
     res.send("messi")
