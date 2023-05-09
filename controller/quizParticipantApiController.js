@@ -588,26 +588,26 @@ const postUpsertQA = async (req, res) => {
                 })
             }
 
-            // 2.4. delete answers that do not exist in question data got from front end
-            for (let answerId of answerIdArr) {
-                if (answerId !== -1) {
-                    try {
-                        let data = await postgresDb('quizanswer')
-                            .where('id', '=', answerId)
-                            .del()
-                        // console.log(data);
-                    } catch (error) {
-                        return res.status(400).json({
-                            EM: "Something went wrong with delete answers ",
-                            EC: 1,
-                            DT: ""
-                        })
-                    }
+
+
+        }
+
+        // 2.4. delete answers that do not exist in question data got from front end
+        for (let answerId of answerIdArr) {
+            if (answerId !== -1) {
+                try {
+                    let data = await postgresDb('quizanswer')
+                        .where('id', '=', answerId)
+                        .del()
+                    // console.log(data);
+                } catch (error) {
+                    return res.status(400).json({
+                        EM: "Something went wrong with delete answers ",
+                        EC: 1,
+                        DT: ""
+                    })
                 }
             }
-
-
-
         }
 
 

@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 6969
 
 
 // Parse JSON data in the request bodyy
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
@@ -36,6 +36,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // config middleware to access raw data
 app.use(bodyParser.json({ type: 'application/json' }));
+
 
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
