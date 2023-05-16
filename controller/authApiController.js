@@ -2,6 +2,7 @@ const postgresDb = require("./../config/knexConfig")
 const bcrypt = require('bcrypt');
 const { generateJwtToken } = require("../generateJwtToken")
 const { userSchema } = require("../config/joiUserConfig")
+let jwt = require('jsonwebtoken');
 
 const saltRounds = 10;
 
@@ -175,6 +176,45 @@ const registerUser = async (req, res) => {
     }
     //res.send("register")
 }
+
+const postLogOut = async (req, res) => {
+    const refresh_token = req.body.refresh_token;
+
+    // 1. verify refresh token taken from front end
+    let jwtData
+    try {
+        jwtData = jwt.verify(refresh_token, process.env.REFRESH_TOKEN_KEY);
+    } catch (error) {
+        return res.status(401).json({
+            EM: "Not authenticated the user",
+            EC: -1,
+            DT: ""
+        })
+    }
+
+    // 2. take user id from decoded refresh token
+    let userId = jwtData.data.id;
+
+    // 3. delete refresh token in database:
+    try {
+        let response = await postgresDb('participant')
+            .where({ id: userId })
+            .update({ fresh_token: null });
+
+        return res.status(200).json({
+            EM: "Log Out successfully",
+            EC: 0,
+            DT: ""
+        })
+    } catch (error) {
+        return res.status(401).json({
+            EM: "something went wrong with delete(update to null) fresh token",
+            EC: -1,
+            DT: ""
+        })
+    }
+    //res.send("log out")
+}
 module.exports = {
-    login, registerUser
+    login, registerUser, postLogOut
 }
