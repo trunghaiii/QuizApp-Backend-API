@@ -283,10 +283,89 @@ const getParticipantPaginate = async (req, res) => {
 
 }
 
+const getDashBoardOverview = async (req, res) => {
+    let user, admin, quiz, question
+    // 1. Get the number of user
+    try {
+        const userRes = await postgresDb('participant')
+            .count()
+            .where({ role: 'USER' })
+            .first();
+
+        user = Number(userRes.count)
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with Get the number of user!",
+            EC: 1,
+            DT: ""
+        })
+    }
+    // 2. Get the number of admin
+    try {
+        const adminRes = await postgresDb('participant')
+            .count()
+            .where({ role: 'ADMIN' })
+            .first();
+
+        admin = Number(adminRes.count)
+        // console.log(admin);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with Get the number of admin!",
+            EC: 1,
+            DT: ""
+        })
+    }
+    // 3. Get the number of quiz
+    try {
+        const quizRes = await postgresDb('quiz')
+            .count()
+            .first();
+
+        quiz = Number(quizRes.count)
+        //console.log(quiz);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with Get the number of quiz!",
+            EC: 1,
+            DT: ""
+        })
+    }
+    // 4. Get the number of question
+    try {
+        const questionRes = await postgresDb('quizquestion')
+            .count()
+            .first();
+
+        question = Number(questionRes.count)
+        //console.log(question);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "Something went wrong with Get the number of question!",
+            EC: 1,
+            DT: ""
+        })
+    }
+
+    // 5 . return data for front end:
+    console.log(user, admin, quiz, question);
+    return res.status(200).json({
+        EM: "Get DashBoard Overview Successfully",
+        EC: 0,
+        DT: {
+            'totalUser': user,
+            'totalAdmin': admin,
+            'totalQuiz': quiz,
+            'totalQuestion': question
+        }
+    })
+    //res.send("hihi")
+}
+
 module.exports = {
     postParticipant, getAllParticipant,
     putParticipant, deleteParticipant,
-    getParticipantPaginate
+    getParticipantPaginate, getDashBoardOverview
 }
 
 

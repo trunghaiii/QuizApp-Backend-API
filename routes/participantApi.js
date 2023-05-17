@@ -3,7 +3,7 @@ const router = express.Router()
 
 const { postParticipant, getAllParticipant,
     putParticipant, deleteParticipant,
-    getParticipantPaginate
+    getParticipantPaginate, getDashBoardOverview
 } = require("../controller/participantApiController")
 
 
@@ -12,6 +12,8 @@ router.get('/all', getAllParticipant)
 router.put('/', putParticipant)
 router.delete('/', deleteParticipant)
 router.get('/', getParticipantPaginate)
+router.get('/overview', getDashBoardOverview)
+
 
 
 
