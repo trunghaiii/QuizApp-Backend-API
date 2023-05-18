@@ -19,7 +19,7 @@ const getQuizByParticipant = async (req, res) => {
     } catch (error) {
         return res.status(401).json({
             EM: "Not authenticated the user",
-            EC: -1,
+            EC: -11,
             DT: ""
         })
     }
