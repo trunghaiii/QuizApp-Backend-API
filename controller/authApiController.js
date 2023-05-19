@@ -215,6 +215,106 @@ const postLogOut = async (req, res) => {
     }
     //res.send("log out")
 }
+
+const postChangePassword = async (req, res) => {
+    const { current_password, new_password } = req.body
+
+    // 1. Check if current_password got from user match password in DB
+
+    // 1.1 take access_token from api call via bear token
+    let access_token;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        access_token = authHeader.substring(7);
+    }
+    //console.log(access_token);
+
+    // 1.2. decode access_token to get data
+    let jwtData
+    try {
+        jwtData = jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+    } catch (error) {
+        return res.status(401).json({
+            EM: "Not authenticated the user",
+            EC: -11,
+            DT: ""
+        })
+    }
+    // 1.3 get password of user from db
+    let userId = jwtData.data.id;
+    let passwordRes;
+    try {
+        passwordRes = await postgresDb('participant')
+            .select('password')
+            .where({ id: userId })
+            .first();
+
+    } catch (error) {
+        return res.status(400).json({
+            EM: "something went wrong with get password of user from db",
+            EC: -1,
+            DT: ""
+        })
+    }
+    // 1.4 compare current_password got from user with password in DB:
+    let matchPassword;
+    try {
+        matchPassword = await bcrypt.compare(current_password, passwordRes.password);
+    } catch (error) {
+        return res.status(400).json({
+            EM: "something went wrong with compare current_password got from user with password in DB",
+            EC: -1,
+            DT: ""
+        })
+    }
+
+    // 2. Update the password in the DB:
+    if (matchPassword) {
+        if (new_password) {
+
+            // hash new password:
+            let hashPassword
+            await bcrypt.hash(new_password, saltRounds).then(function (hash) {
+                hashPassword = hash;
+            });
+
+            // update password in DB
+            try {
+                const response = await postgresDb('participant')
+                    .where({ id: userId })
+                    .update({ password: hashPassword });
+            } catch (error) {
+                return res.status(400).json({
+                    EM: "something went wrong with update new password in DB",
+                    EC: -1,
+                    DT: ""
+                })
+            }
+
+
+        } else {
+            // when new password is empty
+            return res.status(400).json({
+                EM: "New Password is not allowed to be empty",
+                EC: -1,
+                DT: ""
+            })
+        }
+    } else {
+        return res.status(400).json({
+            EM: "Your Current Password is not correct",
+            EC: -1,
+            DT: ""
+        })
+    }
+    return res.status(200).json({
+        EM: "Update New Password successfully!",
+        EC: 0,
+        DT: ""
+    })
+    res.send("hahah postChangePassword")
+}
 module.exports = {
-    login, registerUser, postLogOut
+    login, registerUser, postLogOut,
+    postChangePassword
 }
