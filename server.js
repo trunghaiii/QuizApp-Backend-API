@@ -25,6 +25,8 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use('/api/v1/participant', upload.single("userImage"));
 app.use('/api/v1/quiz', upload.single("quizImage"));
 app.use('/api/v1/question', upload.single("questionImage"));
+app.use('/api/v1/auth/profile', upload.single("profileImage"));
+
 //app.use('/api/v1/answer', upload.single(""));
 
 

@@ -314,7 +314,85 @@ const postChangePassword = async (req, res) => {
     })
     res.send("hahah postChangePassword")
 }
+
+const postChangeProfile = async (req, res) => {
+    const { username } = req.body;
+    const profileImage = req.file;
+    // 1. Getting the id of user
+    // 1.1 take access_token from api call via bear token
+    let access_token;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        access_token = authHeader.substring(7);
+    }
+    //console.log(access_token);
+
+    // 1.2. decode access_token to get data
+    let jwtData
+    try {
+        jwtData = jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+    } catch (error) {
+        return res.status(401).json({
+            EM: "Not authenticated the user",
+            EC: -11,
+            DT: ""
+        })
+    }
+
+    let userId = jwtData.data.id; // user id
+
+    // 2. Update data user in the DB:
+    //2.1 update username:
+    if (username) {
+        try {
+            let usernameRes = await postgresDb('participant')
+                .where({ id: userId })
+                .update({ username: username });
+        } catch (error) {
+            return res.status(400).json({
+                EM: "something went wrong with update username",
+                EC: -1,
+                DT: ""
+            })
+        }
+    } else {
+        return res.status(400).json({
+            EM: "username is not allowed to be empty",
+            EC: -1,
+            DT: ""
+        })
+    }
+
+    // 2.2 Update Image:
+
+    if (profileImage) {
+        const buffer = await profileImage.buffer;
+        let base64Image = await buffer.toString("base64");
+
+        try {
+            let imgRes = await postgresDb('participant')
+                .where({ id: userId })
+                .update({ image: base64Image });
+        } catch (error) {
+            return res.status(400).json({
+                EM: "something went wrong with Update Image",
+                EC: -1,
+                DT: ""
+            })
+        }
+    }
+
+    // 3. send response to front end
+    return res.status(200).json({
+        EM: "Update Profile successfully",
+        EC: 0,
+        DT: ""
+    })
+
+    //console.log(userId);
+    res.send("hahahahahahahah postChangeProfile")
+}
 module.exports = {
     login, registerUser, postLogOut,
-    postChangePassword
+    postChangePassword, postChangeProfile
 }
