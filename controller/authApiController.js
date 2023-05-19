@@ -342,12 +342,36 @@ const postChangeProfile = async (req, res) => {
     let userId = jwtData.data.id; // user id
 
     // 2. Update data user in the DB:
-    //2.1 update username:
+
+    // 2.1 Update Image:
+
+    if (profileImage) {
+        const buffer = await profileImage.buffer;
+        let base64Image = await buffer.toString("base64");
+
+        try {
+            let imgRes = await postgresDb('participant')
+                .where({ id: userId })
+                .update({ image: base64Image })
+        } catch (error) {
+            return res.status(400).json({
+                EM: "something went wrong with Update Image",
+                EC: -1,
+                DT: ""
+            })
+        }
+    }
+
+    //2.2 update username
+    let returnData;
     if (username) {
         try {
             let usernameRes = await postgresDb('participant')
                 .where({ id: userId })
-                .update({ username: username });
+                .update({ username: username })
+                .returning(['username', 'image']);
+            returnData = usernameRes[0];
+            //console.log(returnData);
         } catch (error) {
             return res.status(400).json({
                 EM: "something went wrong with update username",
@@ -363,30 +387,11 @@ const postChangeProfile = async (req, res) => {
         })
     }
 
-    // 2.2 Update Image:
-
-    if (profileImage) {
-        const buffer = await profileImage.buffer;
-        let base64Image = await buffer.toString("base64");
-
-        try {
-            let imgRes = await postgresDb('participant')
-                .where({ id: userId })
-                .update({ image: base64Image });
-        } catch (error) {
-            return res.status(400).json({
-                EM: "something went wrong with Update Image",
-                EC: -1,
-                DT: ""
-            })
-        }
-    }
-
     // 3. send response to front end
     return res.status(200).json({
         EM: "Update Profile successfully",
         EC: 0,
-        DT: ""
+        DT: returnData
     })
 
     //console.log(userId);
