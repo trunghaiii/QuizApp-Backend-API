@@ -1,4 +1,4 @@
-
+let jwt = require('jsonwebtoken');
 const postgresDb = require("./../config/knexConfig")
 const bcrypt = require('bcrypt');
 const { userSchema, updateUserSchema } = require("../config/joiUserConfig")
@@ -284,6 +284,28 @@ const getParticipantPaginate = async (req, res) => {
 }
 
 const getDashBoardOverview = async (req, res) => {
+    // 0. verify jwt to check if access token expired
+    //  take access_token from api call via bear token
+    let access_token;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        access_token = authHeader.substring(7);
+    }
+    //console.log(access_token);
+
+    // verify jwt to check if access token expired
+    let jwtData
+    try {
+        jwtData = jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+    } catch (error) {
+        return res.status(401).json({
+            EM: "Not authenticated the user",
+            EC: -11,
+            DT: ""
+        })
+    }
+
+
     let user, admin, quiz, question
     // 1. Get the number of user
     try {
