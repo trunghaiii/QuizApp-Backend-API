@@ -4,7 +4,7 @@ const generateJwtToken = (user) => {
     let fresh_expired = Math.floor(Date.now() / 1000) + (60 * 60 * 24);
 
     const accessToken = jwt.sign({
-        exp: Math.floor(Date.now() / 1000) + (5),
+        exp: Math.floor(Date.now() / 1000) + (60 * 60),
         data: user
     }, process.env.ACCESS_TOKEN_KEY);
 

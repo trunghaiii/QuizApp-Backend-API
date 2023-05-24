@@ -209,7 +209,7 @@ const putParticipant = async (req, res) => {
 
 const deleteParticipant = async (req, res) => {
     const { id } = req.body
-    console.log(req.body);
+    //console.log(req.body);
     let response;
     try {
         response = await postgresDb('participant')
@@ -370,7 +370,7 @@ const getDashBoardOverview = async (req, res) => {
     }
 
     // 5 . return data for front end:
-    console.log(user, admin, quiz, question);
+    //console.log(user, admin, quiz, question);
     return res.status(200).json({
         EM: "Get DashBoard Overview Successfully",
         EC: 0,
