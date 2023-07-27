@@ -118,7 +118,7 @@ const postSubmitQuiz = async (req, res) => {
         }).returning(['id', 'name', 'description', 'difficulty', 'updated_at', 'created_at'])
 
         //console.log(response);
-        res.status(200).json({
+        return res.status(200).json({
             DT: {
                 id: response[0].id,
                 name: response[0].name,
@@ -132,6 +132,8 @@ const postSubmitQuiz = async (req, res) => {
         })
         //console.log(response);
     } catch (error) {
+        console.log(error);
+
         return res.status(400).json({
             EM: "Something went wrong!",
             EC: 1,
