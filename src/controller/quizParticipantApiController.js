@@ -323,19 +323,22 @@ const deleteQuiz = async (req, res) => {
                 .del();
 
 
-            trx.commit();
-            return res.status(200).json({
-                EM: "Delete the quiz sucessfully",
-                EC: 0,
-                DT: {
-                    id: +req.params.id
-                }
-            })
+            //await trx.commit();
+
         });
+
+        return res.status(200).json({
+            EM: "Delete the quiz sucessfully",
+            EC: 0,
+            DT: {
+                id: +req.params.id
+            }
+        })
 
 
     } catch (error) {
-        //console.log(error);
+        // console.log(error);
+        // console.log("ghggg");
         return res.status(400).json({
             EM: "Something went wrong with Delete all fields that match quizId in other tables",
             EC: 1,
