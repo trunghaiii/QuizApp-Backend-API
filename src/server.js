@@ -21,18 +21,14 @@ const PORT = process.env.PORT || 6969
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json({ limit: '10mb' }));
 
-// config to fix being blocked by cors policy when call api from frontend
-app.use(cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
-    credentials: true, // Allow credentials 
-}));
 
 // fix bug blocked by cors policy
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,            //access-control-allow-credentials:true
+    optionSuccessStatus: 200
+}
+app.use(cors(corsOptions));
 
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
