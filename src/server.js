@@ -39,6 +39,13 @@ app.use(express.urlencoded({ extended: true }))
 // config middleware to access raw data
 app.use(bodyParser.json({ type: 'application/json' }));
 
+// config to fix being blocked by cors policy when call api from frontend
+app.use(cors({
+    origin: 'http://localhost:3000', // Specify the allowed origin
+    credentials: true, // Allow credentials 
+}));
+
+// fix bug blocked by cors policy
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
