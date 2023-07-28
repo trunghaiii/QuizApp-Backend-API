@@ -17,18 +17,14 @@ const upload = multer();
 const app = express()
 const PORT = process.env.PORT || 6969
 
+// fix bug blocked by cors policy
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json({ limit: '10mb' }));
 
 
-// fix bug blocked by cors policy
-const corsOptions = {
-    origin: 'http://localhost:3000',
-    credentials: true,            //access-control-allow-credentials:true
-    optionSuccessStatus: 200
-}
-app.use(cors(corsOptions));
+
 
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
