@@ -6,7 +6,7 @@ const questionApi = require("./routes/questionApi")
 const answerApi = require("./routes/answerApi")
 const bodyParser = require('body-parser');
 
-var cors = require('cors')
+import cors from "cors"
 require('dotenv').config()
 
 // confif receive req.body from form-data on postman///
@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 6969
 
 // fix bug blocked by cors policy
 //app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors())
 
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json({ limit: '10mb' }));
@@ -31,15 +32,6 @@ app.use('/api/v1/auth/profile', upload.single("profileImage"));
 
 //app.use('/api/v1/answer', upload.single(""));
 
-
-app.use(cors())
-
-// fix bug blocked by cors policy
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
 
 app.use(express.urlencoded({ extended: true }))
 
