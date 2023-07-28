@@ -31,7 +31,7 @@ app.use('/api/v1/auth/profile', upload.single("profileImage"));
 
 
 
-app.use(cors())
+// app.use(cors())
 
 
 app.use(express.urlencoded({ extended: true }))
