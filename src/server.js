@@ -6,7 +6,7 @@ const questionApi = require("./routes/questionApi")
 const answerApi = require("./routes/answerApi")
 const bodyParser = require('body-parser');
 
-import cors from "cors"
+const cors = require("cors")
 require('dotenv').config()
 
 // confif receive req.body from form-data on postman///
