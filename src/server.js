@@ -39,6 +39,11 @@ app.use(express.urlencoded({ extended: true }))
 // config middleware to access raw data
 app.use(bodyParser.json({ type: 'application/json' }));
 
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
