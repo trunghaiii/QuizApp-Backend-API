@@ -34,6 +34,12 @@ app.use('/api/v1/auth/profile', upload.single("profileImage"));
 
 app.use(cors())
 
+// fix bug blocked by cors policy
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
 app.use(express.urlencoded({ extended: true }))
 
