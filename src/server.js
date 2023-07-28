@@ -20,9 +20,6 @@ const PORT = process.env.PORT || 6969
 // fix bug blocked by cors policy
 app.use(cors({ origin: 'http://localhost:3000' }));
 
-// Parse JSON data in the request bodyy
-app.use(bodyParser.json({ limit: '10mb' }));
-
 
 
 
@@ -34,7 +31,8 @@ app.use('/api/v1/auth/profile', upload.single("profileImage"));
 
 //app.use('/api/v1/answer', upload.single(""));
 
-
+// Parse JSON data in the request bodyy
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // app.use(cors())
 
