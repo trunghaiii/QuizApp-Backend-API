@@ -21,6 +21,19 @@ const PORT = process.env.PORT || 6969
 // Parse JSON data in the request bodyy
 app.use(bodyParser.json({ limit: '10mb' }));
 
+// config to fix being blocked by cors policy when call api from frontend
+app.use(cors({
+    origin: 'http://localhost:3000', // Specify the allowed origin
+    credentials: true, // Allow credentials 
+}));
+
+// fix bug blocked by cors policy
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
+
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
 app.use('/api/v1/quiz', upload.single("quizImage"));
@@ -39,18 +52,7 @@ app.use(express.urlencoded({ extended: true }))
 // config middleware to access raw data
 app.use(bodyParser.json({ type: 'application/json' }));
 
-// config to fix being blocked by cors policy when call api from frontend
-app.use(cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
-    credentials: true, // Allow credentials 
-}));
 
-// fix bug blocked by cors policy
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
 
 app.use('/api/v1/participant', participantApi)
 app.use('/api/v1/auth', authApi)
