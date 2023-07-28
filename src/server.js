@@ -18,10 +18,10 @@ const app = express()
 const PORT = process.env.PORT || 6969
 
 // fix bug blocked by cors policy
-app.use(cors({ origin: '*' }));
+//app.use(cors({ origin: 'http://localhost:3000' }));
 
-
-
+// Parse JSON data in the request bodyy
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // confif receive req.body and upload file from form-data on postman
 app.use('/api/v1/participant', upload.single("userImage"));
@@ -31,10 +31,8 @@ app.use('/api/v1/auth/profile', upload.single("profileImage"));
 
 //app.use('/api/v1/answer', upload.single(""));
 
-// Parse JSON data in the request bodyy
-app.use(bodyParser.json({ limit: '10mb' }));
 
-// app.use(cors())
+app.use(cors())
 
 
 app.use(express.urlencoded({ extended: true }))
