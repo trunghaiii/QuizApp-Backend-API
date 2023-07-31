@@ -25,10 +25,10 @@ app.use(cors())
 app.use(bodyParser.json({ limit: '10mb' }));
 
 // confif receive req.body and upload file from form-data on postman
-app.use('/api/v1/participant', upload.single("userImage"));
-app.use('/api/v1/quiz', upload.single("quizImage"));
-app.use('/api/v1/question', upload.single("questionImage"));
-app.use('/api/v1/auth/profile', upload.single("profileImage"));
+app.use('/api/v1/participant', upload.single("userImage"), app.use(cors()));
+app.use('/api/v1/quiz', upload.single("quizImage"), app.use(cors()));
+app.use('/api/v1/question', upload.single("questionImage"), app.use(cors()));
+app.use('/api/v1/auth/profile', upload.single("profileImage"), app.use(cors()));
 
 //app.use('/api/v1/answer', upload.single(""));
 
